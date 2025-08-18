@@ -1,31 +1,34 @@
-# Fraudless Attendance: Real-time Face Recognition Service 🧠🎓
+Fraudless Attendance: Real-time Face Recognition Service 🧠🎓
+Sistem Absensi Cerdas Berbasis AI dengan Pengenalan Wajah dan Registrasi Dinamis
 
-Selamat datang di *Fraudless Attendance System*, sebuah sistem pengenalan wajah berbasis AI yang dirancang sebagai layanan (*service*) yang kokoh dan dapat diskalakan. Proyek ini menggunakan model *deep learning* canggih dari **InsightFace** untuk menyediakan identifikasi wajah secara *real-time* dan kemampuan untuk mendaftarkan identitas baru secara dinamis tanpa perlu mematikan sistem.
+👋 Apa Proyek Ini?
+Bayangkan sebuah sistem absensi super canggih yang bisa mengenali wajah mahasiswa secara otomatis melalui kamera. Proyek ini adalah "otak" di balik sistem tersebut. Ini adalah sebuah layanan (service) AI yang berjalan di server, yang bertugas untuk:
 
-## 🚀 Fitur Utama
+Mengenali Wajah: Secara akurat mengidentifikasi siapa yang ada di depan kamera berdasarkan database foto yang sudah ada.
 
--   **Arsitektur Client-Server:** Sistem dipisahkan menjadi Backend AI (server) dan Klien, memungkinkan skalabilitas dan fleksibilitas.
--   **Identifikasi Real-time:** Klien webcam dapat mengirimkan *stream* video ke server untuk proses identifikasi wajah secara terus-menerus.
--   **Registrasi Dinamis (On-the-Fly):** Daftarkan wajah baru ke dalam database kapan saja melalui API endpoint, dan sistem akan langsung mampu mengenalinya tanpa perlu di-restart.
--   **Akurasi Tinggi:** Ditenagai oleh model SOTA (*State-of-the-Art*) dari InsightFace untuk memastikan akurasi pengenalan yang tinggi.
--   **Berbasis API:** Semua fungsionalitas inti diekspos melalui API, siap untuk diintegrasikan dengan aplikasi web, mobile, atau layanan lainnya.
+Belajar Wajah Baru: Mampu mempelajari wajah-wajah baru secara langsung (real-time) tanpa perlu mematikan sistem.
 
-## 🏛️ Arsitektur Sistem
+Karena berbasis API, "otak" ini siap dihubungkan ke berbagai aplikasi, seperti aplikasi absensi di iOS/Android, aplikasi web, atau sistem keamanan gedung.
 
+🚀 Fitur Utama
+Arsitektur Skalabel (Client-Server): Desain backend yang terpisah dari aplikasi pengguna (klien), memungkinkan sistem untuk tumbuh dan melayani banyak pengguna secara efisien.
+
+Identifikasi Real-time: Klien (misalnya webcam) dapat mengirimkan video ke server untuk proses identifikasi wajah yang cepat dan terus-menerus.
+
+Registrasi Dinamis (On-the-Fly): Daftarkan wajah baru kapan saja melalui API. Sistem akan langsung mampu mengenali orang tersebut dalam hitungan detik.
+
+Akurasi Tinggi: Ditenagai oleh model Deep Learning State-of-the-Art dari InsightFace untuk memastikan akurasi pengenalan yang andal.
+
+Siap Integrasi: Fungsionalitas inti diekspos melalui API standar, membuatnya mudah untuk diintegrasikan dengan berbagai platform.
+
+🏛️ Arsitektur Sistem
 Sistem ini dirancang dengan pemisahan tugas yang jelas untuk memastikan performa dan kemudahan pengembangan.
 
-1.  **AI Backend Service (`face_service.py`):**
-    * Dibangun menggunakan **Flask**.
-    * Bertugas memuat model AI ke memori, mengelola database wajah, dan menyediakan API untuk operasi pengenalan dan registrasi.
-    * Ini adalah "otak" dari keseluruhan sistem.
+AI Backend Service (face_service.py): Sebuah server Flask yang menjadi pusat operasi. Server ini memuat model AI, mengelola database wajah di memori, dan menyediakan API untuk semua permintaan.
 
-2.  **Klien (`live_client.py` & `register_client.py`):**
-    * Aplikasi Python yang berinteraksi dengan server.
-    * `live_client.py` menangkap video dari webcam dan meminta identifikasi.
-    * `register_client.py` digunakan untuk menambahkan wajah baru ke sistem.
+Klien (live_client.py & register_client.py): Aplikasi Python yang berkomunikasi dengan server. live_client untuk absensi via webcam, dan register_client untuk menambahkan data wajah baru.
 
-## 📂 Struktur Folder Proyek
-
+📂 Struktur Folder Proyek
 FraudlessAttendance2/
 |
 +-- assets/
@@ -46,35 +49,35 @@ FraudlessAttendance2/
 +-- venv/                 # (Folder Virtual Environment)
 |
 +-- requirements.txt      # (Daftar dependensi)
+🛠️ Instalasi & Konfigurasi
+Ikuti langkah-langkah berikut untuk menyiapkan dan menjalankan proyek di komputer Anda.
 
+1. Prasyarat
+Python 3.9+
 
-## 🛠️ Instalasi & Konfigurasi
+Git
 
-Ikuti langkah-langkah berikut untuk menyiapkan dan menjalankan proyek.
-
-#### 1. Prasyarat
--   Python 3.9+
--   Git
-
-#### 2. Kloning Repositori
+2. Kloning Repositori
 Buka terminal Anda dan kloning repositori ini.
-```bash
-git clone [https://github.com/richardwijaya04/FaceRecogFraudless.git](https://github.com/richardwijaya04/FaceRecogFraudless.git)
+
+Bash
+
+git clone https://github.com/richardwijaya04/FaceRecogFraudless.git
 cd FraudlessAttendance2
 3. Siapkan Virtual Environment
-Sangat penting untuk menggunakan virtual environment agar dependensi proyek terisolasi.
+Menggunakan virtual environment sangat penting agar dependensi proyek tidak tercampur dengan proyek lain.
 
 Bash
 
 # Membuat environment baru bernama 'venv'
 python3 -m venv venv
 
-# Mengaktifkan environment (macOS/Linux)
+# Mengaktifkan environment (untuk macOS/Linux)
 source venv/bin/activate
-(Untuk Windows, gunakan: .\venv\Scripts\activate)
+(Untuk pengguna Windows, gunakan perintah: .\venv\Scripts\activate)
 
 4. Instal Dependensi
-Pastikan file requirements.txt Anda berisi semua pustaka yang dibutuhkan, lalu jalankan:
+Setelah virtual environment aktif, instal semua pustaka yang dibutuhkan.
 
 Bash
 
@@ -82,20 +85,20 @@ pip install -r requirements.txt
 Catatan: Pastikan file requirements.txt Anda minimal berisi: flask, requests, opencv-python, insightface, onnxruntime, numpy, pillow.
 
 5. Isi Database Wajah Awal
-Sebelum menjalankan server, isi folder assets/database/ dengan data wajah awal. Buat satu subfolder untuk setiap orang, dan letakkan beberapa contoh fotonya di dalamnya (sesuai struktur di atas).
+Sebelum server dijalankan, Anda perlu menyediakan data wajah awal untuk dipelajari. Salin folder-folder siswa (contoh: student_001, student_002, dst.) ke dalam direktori assets/database/.
 
 ▶️ Menjalankan Sistem
 Sistem ini membutuhkan dua terminal yang berjalan secara bersamaan: satu untuk server dan satu untuk klien.
 
 Langkah 1: Jalankan Server AI (di Terminal 1 🖥️)
-Server harus dijalankan terlebih dahulu. Ia akan memuat model dan database ke memori.
+Server harus dijalankan terlebih dahulu untuk memuat model dan database ke memori.
 
 Bash
 
-# Pastikan venv sudah aktif
+# Pastikan venv sudah aktif di terminal ini
 source venv/bin/activate
 
-# Jalankan server dari direktori utama
+# Jalankan server dari direktori utama proyek
 python scripts/face_service.py
 Server sekarang berjalan dan menunggu koneksi di port 5050. Biarkan terminal ini tetap terbuka.
 
@@ -104,7 +107,7 @@ Buka jendela terminal BARU.
 
 Bash
 
-# Pindah ke direktori proyek
+# Pindah ke direktori proyek Anda
 cd path/to/FraudlessAttendance2
 
 # Aktifkan venv (wajib di setiap terminal baru)
@@ -114,14 +117,14 @@ source venv/bin/activate
 python scripts/live_client.py
 Sebuah jendela akan muncul menampilkan feed webcam Anda, lengkap dengan hasil identifikasi wajah secara real-time.
 
-Langkah 3: Mendaftarkan Wajah Baru (di Terminal 2)
+Langkah 3: Mendaftarkan Wajah Baru (Opsional, di Terminal 2)
 Untuk menambahkan wajah baru tanpa mematikan server, gunakan skrip register_client.py di Terminal 2.
 
 Bash
 
 # Format: python scripts/register_client.py <id_baru> "<path/ke/gambar.jpg>"
 python scripts/register_client.py student_011 "path/ke/foto/student_011.jpeg"
-Setelah perintah ini berhasil, live_client.py akan langsung mampu mengenali student_011.
+Setelah perintah ini berhasil, sistem akan langsung mampu mengenali student_011.
 
 ⚙️ API Endpoints
 Server menyediakan beberapa endpoint untuk interaksi:
