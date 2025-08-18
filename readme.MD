@@ -1,76 +1,4 @@
-# Fraudless Attendance: Real-time Face Recognition Service 🧠🎓
 
-*Sistem Absensi Cerdas Berbasis AI dengan Pengenalan Wajah dan Registrasi Dinamis*
-
----
-
-## 👋 Gambaran Umum Proyek
-
-Selamat datang di *Fraudless Attendance System*, sebuah prototipe sistem absensi canggih yang menggunakan pengenalan wajah. Proyek ini berfungsi sebagai "otak" (backend service) yang mampu mengidentifikasi wajah secara *real-time* dan dapat "mempelajari" wajah-wajah baru secara dinamis tanpa perlu dimatikan.
-
-Karena dirancang dengan arsitektur berbasis API, sistem ini sangat fleksibel dan siap untuk dihubungkan dengan berbagai aplikasi, seperti aplikasi absensi pada iOS/Android, website, atau bahkan sistem keamanan gedung.
-
-## 🚀 Fitur Utama
-
--   **Arsitektur Skalabel (Client-Server):** Desain backend yang terpisah dari aplikasi pengguna (klien), memungkinkan sistem untuk tumbuh dan melayani banyak pengguna secara efisien.
--   **Identifikasi Real-time:** Klien (misalnya webcam) dapat mengirimkan *stream* video ke server untuk proses identifikasi wajah yang cepat dan terus-menerus.
--   **Registrasi Dinamis (On-the-Fly):** Daftarkan wajah baru kapan saja melalui API. Sistem akan langsung mampu mengenali orang tersebut dalam hitungan detik, tanpa perlu restart.
--   **Akurasi Tinggi:** Ditenagai oleh model *Deep Learning State-of-the-Art* dari **InsightFace** untuk memastikan akurasi pengenalan yang andal.
--   **Siap Integrasi:** Fungsionalitas inti diekspos melalui API standar, membuatnya mudah untuk diintegrasikan dengan berbagai platform.
-
-## 💻 Tumpukan Teknologi (Technology Stack)
-
--   **Backend:** Python, Flask
--   **AI Engine:** InsightFace
--   **Runtime & Libraries:** ONNX Runtime, OpenCV, NumPy, Pillow
--   **Interaksi API:** Requests
--   **Lingkungan:** Virtual Environment (venv)
-
-## 📂 Struktur Folder Proyek
-FraudlessAttendance2/
-|
-+-- assets/
-|   |
-|   +-- database/       # <-- Tempat menyimpan gambar referensi (training)
-|       |
-|       +-- student_001/
-|           |
-|           +-- 001_1.jpg
-|           +-- ...
-|
-+-- scripts/            # <-- Semua kode Python ada di sini
-|   |
-|   +-- face_service.py     # (Backend Server AI)
-|   +-- live_client.py      # (Klien Webcam Real-time)
-|   +-- register_client.py  # (Klien untuk mendaftarkan wajah baru)
-|
-+-- venv/                 # (Folder Virtual Environment)
-|
-+-- requirements.txt      # (Daftar dependensi)
-
-## 🛠️ Panduan Instalasi & Konfigurasi
-
-Ikuti langkah-langkah berikut untuk menyiapkan dan menjalankan proyek di komputer Anda.
-
-### 1. Prasyarat
--   Python 3.9+
--   Git
-
-### 2. Kloning Repositori
-Buka terminal Anda, pindah ke direktori kerja Anda, dan kloning repositori ini.
-```bash
-git clone [https://github.com/richardwijaya04/FaceRecogFraudless.git](https://github.com/richardwijaya04/FaceRecogFraudless.git)
-cd FraudlessAttendance2
-
-Tentu. Saya mengerti. Anda membutuhkan satu dokumen final yang merangkum semua yang telah kita bangun—kode yang benar, langkah-langkah yang tepat, dan penjelasan yang jernih—dalam format README yang profesional dan bisa dipahami semua orang.
-
-Saya akan menyaring seluruh riwayat diskusi kita, mengambil setiap potongan kode final, instruksi, dan pelajaran yang kita dapatkan, lalu menyusunnya menjadi dokumen master untuk proyek Anda.
-
-Ini adalah versi definitif yang Anda butuhkan.
-
-Gunakan tombol "Salin" atau "Copy" di pojok blok kode di bawah untuk memastikan formatnya 100% sempurna saat Anda menempelkannya ke file README.md.
-
-Markdown
 
 # Fraudless Attendance: Real-time Face Recognition Service 🧠🎓
 
@@ -197,3 +125,4 @@ Bash
 
 # Format: python scripts/register_client.py <id_baru> "<path/ke/gambar.jpg>"
 python scripts/register_client.py student_011 "assets/database/student_011/foto_baru.jpeg"
+
