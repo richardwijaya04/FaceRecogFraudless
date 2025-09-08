@@ -158,7 +158,7 @@ face_service = FaceRecognitionService()
 # Ini adalah 'pintu' bagi aplikasi lain untuk berinteraksi dengan AI kita.
 # =================================================================================
 
-@app.route('/register', methods=['POST'])
+@app.route('/recognition/register', methods=['POST'])
 def register():
     """Endpoint untuk mendaftarkan wajah baru."""
     if 'photo' not in request.files or 'studentId' not in request.form:
@@ -175,7 +175,7 @@ def register():
         return jsonify({"success": False, "error": message}), 400
 
 
-@app.route('/verify', methods=['POST'])
+@app.route('/recognition/verify', methods=['POST'])
 def verify():
     """Endpoint untuk memverifikasi wajah dengan ID yang diklaim (1:1)."""
     if 'photo' not in request.files or 'studentId' not in request.form:
@@ -202,7 +202,7 @@ def verify():
         "similarity": f"{similarity:.2f}%"
     })
 
-@app.route('/identify', methods=['POST'])
+@app.route('/recognition/identify', methods=['POST'])
 def identify():
     """Endpoint untuk mengidentifikasi wajah dari database (1:N)."""
     if 'photo' not in request.files:
