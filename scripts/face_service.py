@@ -1,3 +1,5 @@
+# app_revised.py
+
 import os
 import cv2
 import numpy as np
@@ -15,19 +17,16 @@ from insightface.app import FaceAnalysis
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Inisialisasi Flask App
 app = Flask(__name__)
 
-# Path folder (dibuat lebih robust)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_PATH = os.path.join(BASE_DIR, "../assets/database")
 os.makedirs(DATABASE_PATH, exist_ok=True)
 
 
 # =================================================================================
-# Professor's Note: Class untuk Enkapsulasi Layanan AI
-# Ini adalah "best practice" untuk memastikan model hanya di-load sekali
-# dan state (database wajah) dikelola dengan aman (thread-safe).
+# Professor's Note: Class Layanan AI yang Telah Dioptimalkan
+# Model tetap di-load sekali. Logika pendaftaran sekarang lebih efisien.
 # =================================================================================
 class FaceRecognitionService:
     def __init__(self):
@@ -40,19 +39,27 @@ class FaceRecognitionService:
             logger.error(f"Gagal inisialisasi InsightFace: {e}")
             raise e
         
-        # Kunci (Lock) untuk operasi database yang aman dari konflik thread
         self.db_lock = Lock()
         self.face_database = self._load_face_database()
 
     def _load_face_database(self):
-        """Memuat semua wajah dari direktori database ke memori."""
+        """
+        Memuat semua wajah dari direktori database ke memori.
+        Setiap entri akan menyimpan embedding rata-rata dan jumlah foto.
+        Format: { student_id: {'embedding': np.array, 'count': int} }
+        """
         database = {}
         logger.info("Memuat database wajah dari disk...")
         for student_id in os.listdir(DATABASE_PATH):
             student_path = os.path.join(DATABASE_PATH, student_id)
             if os.path.isdir(student_path):
                 embeddings = []
-                for file in os.listdir(student_path):
+                image_files = [f for f in os.listdir(student_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                
+                if not image_files:
+                    continue
+
+                for file in image_files:
                     try:
                         img_path = os.path.join(student_path, file)
                         img = cv2.imread(img_path)
@@ -65,7 +72,11 @@ class FaceRecognitionService:
                         logger.warning(f"Gagal memproses {img_path}: {e}")
                 
                 if embeddings:
-                    database[student_id] = np.mean(embeddings, axis=0)
+                    # Simpan embedding rata-rata dan jumlah foto
+                    database[student_id] = {
+                        'embedding': np.mean(embeddings, axis=0),
+                        'count': len(embeddings)
+                    }
                     logger.info(f"Berhasil memuat data: {student_id} ({len(embeddings)} gambar)")
         logger.info("Database wajah selesai dimuat.")
         return database
@@ -79,8 +90,9 @@ class FaceRecognitionService:
         identity = "Unknown"
         
         with self.db_lock:
-            for student_id, db_embedding in self.face_database.items():
-                # Cosine Distance
+            # Iterasi melalui database yang sekarang berisi dict
+            for student_id, data in self.face_database.items():
+                db_embedding = data['embedding']
                 dist = 1 - np.dot(embedding_to_check, db_embedding) / (np.linalg.norm(embedding_to_check) * np.linalg.norm(db_embedding))
                 if dist < min_dist:
                     min_dist = dist
@@ -94,20 +106,24 @@ class FaceRecognitionService:
     def verify_face(self, embedding_to_check, student_id, threshold=0.6):
         """Memverifikasi apakah wajah cocok dengan student_id tertentu (1:1)."""
         with self.db_lock:
-            db_embedding = self.face_database.get(student_id)
+            student_data = self.face_database.get(student_id)
         
-        if db_embedding is None:
-            return False, float('inf') # ID Siswa tidak ditemukan di database
+        if student_data is None:
+            return False, float('inf')
             
+        db_embedding = student_data['embedding']
         dist = 1 - np.dot(embedding_to_check, db_embedding) / (np.linalg.norm(embedding_to_check) * np.linalg.norm(db_embedding))
         
         return dist <= threshold, dist
 
-    def register_new_face(self, image_bytes, student_id):
-        """Mendaftarkan wajah baru ke database dan menyimpannya ke disk."""
+    def register_face(self, image_bytes, student_id):
+        """
+        Mendaftarkan wajah baru. Menangani mahasiswa baru dan lama secara efisien.
+        Ini adalah versi yang telah disempurnakan.
+        """
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         img_cv = np.array(img)
-        img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
+        img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
 
         faces = self.face_analyzer.get(img_cv)
         if not faces:
@@ -118,36 +134,35 @@ class FaceRecognitionService:
         student_path = os.path.join(DATABASE_PATH, student_id)
         os.makedirs(student_path, exist_ok=True)
         
-        # Simpan gambar baru
+        # Simpan gambar baru dengan nama file yang unik
         file_count = len(os.listdir(student_path)) + 1
         new_image_path = os.path.join(student_path, f"{student_id}_{file_count}.jpg")
         cv2.imwrite(new_image_path, img_cv)
 
-        # Update database di memori secara thread-safe
+        # Update database di memori secara thread-safe dan efisien
         with self.db_lock:
             if student_id not in self.face_database:
-                self.face_database[student_id] = new_embedding
+                # KASUS 1: MAHASISWA BARU
+                self.face_database[student_id] = {
+                    'embedding': new_embedding,
+                    'count': 1
+                }
+                message = f"Mahasiswa baru {student_id} berhasil didaftarkan dengan foto pertama."
             else:
-                # Perbarui embedding rata-rata
-                existing_embedding = self.face_database[student_id]
-                # Kita bisa menggunakan pendekatan yang lebih canggih di sini (e.g., weighted average)
-                # Tapi untuk sekarang, kita muat ulang untuk kesederhanaan
-                self._update_student_embedding(student_id)
+                # KASUS 2: MAHASISWA LAMA (OPTIMIZED UPDATE)
+                existing_data = self.face_database[student_id]
+                old_embedding = existing_data['embedding']
+                old_count = existing_data['count']
+                
+                # Hitung rata-rata baru secara inkremental
+                new_avg_embedding = ((old_embedding * old_count) + new_embedding) / (old_count + 1)
+                
+                # Update data di memori
+                self.face_database[student_id]['embedding'] = new_avg_embedding
+                self.face_database[student_id]['count'] += 1
+                message = f"Foto baru berhasil ditambahkan untuk {student_id}. Total foto sekarang: {old_count + 1}."
         
-        return True, f"Wajah {student_id} berhasil didaftarkan."
-    
-    def _update_student_embedding(self, student_id):
-        """Helper untuk mengupdate embedding seorang siswa di memori."""
-        student_path = os.path.join(DATABASE_PATH, student_id)
-        embeddings = []
-        for file in os.listdir(student_path):
-            img_path = os.path.join(student_path, file)
-            img = cv2.imread(img_path)
-            faces = self.face_analyzer.get(img)
-            if faces:
-                embeddings.append(faces[0].embedding)
-        if embeddings:
-            self.face_database[student_id] = np.mean(embeddings, axis=0)
+        return True, message
 
 # Inisialisasi service sebagai global singleton
 face_service = FaceRecognitionService()
@@ -155,29 +170,29 @@ face_service = FaceRecognitionService()
 
 # =================================================================================
 # Professor's Note: Definisi API Endpoints
-# Ini adalah 'pintu' bagi aplikasi lain untuk berinteraksi dengan AI kita.
+# Endpoint '/register' sekarang memanggil method yang sudah dioptimalkan.
 # =================================================================================
 
 @app.route('/recognition/register', methods=['POST'])
 def register():
-    """Endpoint untuk mendaftarkan wajah baru."""
+    """Endpoint untuk mendaftarkan wajah, baik baru maupun lama."""
     if 'photo' not in request.files or 'studentId' not in request.form:
         return jsonify({"success": False, "error": "Membutuhkan 'photo' dan 'studentId'."}), 400
     
     student_id = request.form['studentId']
     photo_file = request.files['photo'].read()
 
-    success, message = face_service.register_new_face(photo_file, student_id)
+    # Menggunakan fungsi baru yang lebih efisien
+    success, message = face_service.register_face(photo_file, student_id)
     
     if success:
         return jsonify({"success": True, "message": message})
     else:
         return jsonify({"success": False, "error": message}), 400
 
-
+# Endpoint /verify dan /identify tidak perlu diubah karena sudah membaca struktur baru
 @app.route('/recognition/verify', methods=['POST'])
 def verify():
-    """Endpoint untuk memverifikasi wajah dengan ID yang diklaim (1:1)."""
     if 'photo' not in request.files or 'studentId' not in request.form:
         return jsonify({"success": False, "error": "Membutuhkan 'photo' dan 'studentId'."}), 400
 
@@ -186,14 +201,14 @@ def verify():
     
     img = Image.open(io.BytesIO(photo_file)).convert("RGB")
     img_cv = np.array(img)
-    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
+    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
 
     faces = face_service.face_analyzer.get(img_cv)
     if not faces:
         return jsonify({"success": False, "error": "Tidak ada wajah terdeteksi."})
 
     is_match, distance = face_service.verify_face(faces[0].embedding, student_id)
-    similarity = (1 - distance) * 100
+    similarity = (1 - distance) * 100 if distance != float('inf') else 0
 
     return jsonify({
         "success": True,
@@ -204,7 +219,6 @@ def verify():
 
 @app.route('/recognition/identify', methods=['POST'])
 def identify():
-    """Endpoint untuk mengidentifikasi wajah dari database (1:N)."""
     if 'photo' not in request.files:
         return jsonify({"success": False, "error": "Membutuhkan 'photo'."}), 400
 
@@ -212,14 +226,14 @@ def identify():
     
     img = Image.open(io.BytesIO(photo_file)).convert("RGB")
     img_cv = np.array(img)
-    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
+    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
 
     faces = face_service.face_analyzer.get(img_cv)
     if not faces:
         return jsonify({"success": False, "error": "Tidak ada wajah terdeteksi."})
 
     identity, distance = face_service.identify_face(faces[0].embedding)
-    similarity = (1 - distance) * 100
+    similarity = (1 - distance) * 100 if distance != float('inf') else 0
 
     return jsonify({
         "success": True,
@@ -232,5 +246,4 @@ def identify():
 # Professor's Note: Menjalankan Server
 # =================================================================================
 if __name__ == '__main__':
-    # host='0.0.0.0' agar bisa diakses dari luar container/mesin
     app.run(host='0.0.0.0', port=5050, debug=False)
