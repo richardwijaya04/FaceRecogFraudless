@@ -123,7 +123,7 @@ class FaceRecognitionService:
         """
         img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         img_cv = np.array(img)
-        img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
+        img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
 
         faces = self.face_analyzer.get(img_cv)
         if not faces:
@@ -201,7 +201,7 @@ def verify():
     
     img = Image.open(io.BytesIO(photo_file)).convert("RGB")
     img_cv = np.array(img)
-    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
+    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
 
     faces = face_service.face_analyzer.get(img_cv)
     if not faces:
@@ -226,7 +226,7 @@ def identify():
     
     img = Image.open(io.BytesIO(photo_file)).convert("RGB")
     img_cv = np.array(img)
-    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB_BGR)
+    img_cv = cv2.cvtColor(img_cv, cv2.COLOR_RGB2BGR)
 
     faces = face_service.face_analyzer.get(img_cv)
     if not faces:
